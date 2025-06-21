@@ -295,19 +295,6 @@ resource "null_resource" "ssh_into_vm" {
       flatpak --user remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
       flatpak --user remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
       echo "Fixed Flathub inclusion in gnome-software App store for User"
-      # Define the application ID for GNOME Terminal
-      TERMAPP_ID="org.gnome.Terminal.desktop"
-      # Get the current favorites
-      CURRENT_FAVORITES=$(gsettings get org.gnome.shell favorite-apps)
-      # Check if Terminal is already in favorites
-      if [[ "$CURRENT_FAVORITES" != *"$TERMAPP_ID"* ]]; then
-        # Insert Terminal into the favorites list
-        UPDATED_FAVORITES=$(echo "$CURRENT_FAVORITES" | sed "s/]$/, '$TERMAPP_ID']/")
-        gsettings set org.gnome.shell favorite-apps "$UPDATED_FAVORITES"
-        echo "GNOME Terminal added to Dash."
-      else
-        echo "GNOME Terminal is already in the Dash."
-      fi
       EOF
     ]
   }
