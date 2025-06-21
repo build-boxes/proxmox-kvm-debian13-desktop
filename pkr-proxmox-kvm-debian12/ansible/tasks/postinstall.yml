@@ -1,0 +1,52 @@
+---
+- name: Add flatpak repo
+  become: true
+  become_method: sudo
+  become_flags: "su -c"
+  ansible.builtin.shell:
+    cmd: >
+      /usr/bin/flatpak remote-add --if-not-exists
+      flathub https://dl.flathub.org/repo/flathub.flatpakrepo;
+
+- name: Setup up self signed Certifictae for xRDP Server
+  become: true
+  become_method: sudo
+  become_flags: "su -c"
+  ansible.builtin.shell:
+    cmd: >
+      /usr/bin/apt install -y xrdp dbus-x11;
+      /usr/bin/rm /etc/xrdp/cert.pem /etc/xrdp/key.pem;
+      /usr/bin/openssl req -new -newkey rsa:4096 -x509
+      -sha256 -days 3650 -nodes
+      -out /etc/xrdp/cert.pem
+      -keyout /etc/xrdp/key.pem
+      -subj "/C=CA/ST=Ontario/L=Toronto/O=Debian/CN=hexword.ca";
+      /usr/bin/chown root:xrdp /etc/xrdp/key.pem;
+      /usr/bin/chmod 440 /etc/xrdp/key.pem;
+      /usr/bin/systemctl enable xrdp;
+
+- name: Update user's .bashrc with /usr/sbin in PATH
+  become: true
+  become_method: sudo
+  become_flags: "su -c"
+  ansible.builtin.shell:
+    cmd: |
+      USERID="terraform"
+      BASHRC="/home/$USERID/.bashrc"
+      if [ -d "/home/$USERID" ] && [ -f "$BASHRC" ]; then
+        grep -q "/usr/sbin" "$BASHRC" || echo 'export PATH="/usr/sbin:$PATH"' >> "$BASHRC"
+      fi
+
+
+- name: Install gnome extensions, gparted, etc.
+  become: true
+  become_method: sudo
+  become_flags: "su -c"
+  ansible.builtin.shell:
+    cmd: |
+      /usr/bin/apt install -y --no-install-recommends gnome-software \
+      chrome-gnome-shell gnome-shell-extension-dashtodock \
+      gnome-shell-extension-manager gnome-shell-extensions \
+      gnome-shell-extensions-extra gnome-tweaks \
+      mpd lua5.4 jq imagemagick gnome-software-plugin-flatpak;
+      /usr/bin/apt install -y gparted gnome-disk-utility;

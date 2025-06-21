@@ -1,0 +1,10 @@
+---
+- name: Debian Config - Debian Baseline & Docker Install
+  hosts: default
+  gather_facts: true
+  become: true
+
+  tasks:
+    - ansible.builtin.include_tasks: tasks/baseline.yml
+    - ansible.builtin.include_tasks: tasks/docker.yml
+    - ansible.builtin.include_tasks: tasks/postinstall.yml
