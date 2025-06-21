@@ -26,3 +26,14 @@
     - tmux
     - unattended-upgrades
     - wget
+    - unattended-upgrades
+
+- name: Set APT periodic update settings
+  copy:
+    dest: /etc/apt/apt.conf.d/10periodic
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+    owner: root
+    group: root
+    mode: '0644'
