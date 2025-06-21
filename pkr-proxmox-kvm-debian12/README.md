@@ -1,6 +1,9 @@
 # Packer Debian 12 (Bookworm) Template for Proxmox
 Packer configuration for creating Debian 12 virtual machine templates for Proxmox VE.
 
+## Original Work Acknowledgement
+This Packer builder is heavily derived from the original work done at [https://github.com/shackofnoreturn/packer-proxmox-debian-12-bookworm-template](https://github.com/shackofnoreturn/packer-proxmox-debian-12-bookworm-template)
+
 ## Requirements
 - [Packer](https://www.packer.io/downloads)
 - [Proxmox VE](https://www.proxmox.com/en/proxmox-ve)
