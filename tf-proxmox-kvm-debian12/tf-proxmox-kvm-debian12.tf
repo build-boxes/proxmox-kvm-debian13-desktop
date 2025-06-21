@@ -291,7 +291,7 @@ resource "null_resource" "ssh_into_vm" {
       gsettings set org.gnome.desktop.wm.preferences button-layout ':minimize,maximize,close'
       echo "Window buttons updated: minimize and maximize enabled."
       # Fix Flathub inclusion in gnome-software app for user
-      gnome-software --quit
+      #gnome-software --quit
       flatpak --user remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
       flatpak --user remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
       echo "Fixed Flathub inclusion in gnome-software App store for User"
@@ -300,6 +300,28 @@ resource "null_resource" "ssh_into_vm" {
   }
 }
 
+
+resource "null_resource" "restart_vm" {
+  depends_on = [null_resource.ssh_into_vm]
+  provisioner "remote-exec" {
+    connection {
+      target_platform = "unix"
+      type            = "ssh"
+      host            = coalesce(try(split("/",proxmox_virtual_environment_vm.example.initialization[0].ip_config[0].ipv4[0].address)[0], null),proxmox_virtual_environment_vm.example.ipv4_addresses[1][0] )
+      user            = var.superuser_username
+      password        = var.superuser_password
+      private_key = file("${var.pvt_key_file}")
+      agent = false
+      timeout = "2m"
+    }
+    # NB this is executed as a batch script by cmd.exe.
+    inline = [
+      <<-EOF
+      sudo reboot
+      EOF
+    ]
+  }
+}
 
 output "ip" {
   value = coalesce(try(split("/",proxmox_virtual_environment_vm.example.initialization[0].ip_config[0].ipv4[0].address)[0], null),proxmox_virtual_environment_vm.example.ipv4_addresses[1][0] )
