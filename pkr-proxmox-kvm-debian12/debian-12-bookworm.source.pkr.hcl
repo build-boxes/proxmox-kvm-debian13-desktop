@@ -1,3 +1,6 @@
+# This Packer builder is heavily derived from the original work done at https://github.com/shackofnoreturn/packer-proxmox-debian-12-bookworm-template
+#
+#
 source "proxmox-iso" "debian-12" {
   proxmox_url              = "https://${var.proxmox_host}/api2/json"
   username                 = var.proxmox_api_user
