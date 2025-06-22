@@ -1,6 +1,6 @@
 # proxmox-kvm-debian12
 
-Debian12 VM Packer Builder and Terraform Instance Manager scripts. Previously these scripts were located in 2 different projects.
+Debian12 Gnome Desktop VM Packer Builder and Terraform Instance Manager scripts. Previously these scripts were located in 2 different projects.
 There are two parts to it.
 1. Using Packer, Ansible, Proxmox etc. create a local KVM Template for Debian12.
     - It is in the subfolder begining with pkr-*
