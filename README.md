@@ -1,4 +1,4 @@
-# proxmox-kvm-debian12
+# proxmox-kvm-debian12-desktop
 
 Debian12 Gnome Desktop VM Packer Builder and Terraform Instance Manager scripts. Previously these scripts were located in 2 different projects.
 There are two parts to it.
