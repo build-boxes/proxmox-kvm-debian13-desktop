@@ -22,7 +22,6 @@
     - linux-image-amd64
     - ncdu
     - sudo
-    - software-properties-common
     - tmux
     - unattended-upgrades
     - wget

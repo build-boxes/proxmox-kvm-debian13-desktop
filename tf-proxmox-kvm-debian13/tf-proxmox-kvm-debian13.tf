@@ -107,14 +107,14 @@ variable "superuser_password" {
 }
 
 # see https://registry.terraform.io/providers/bpg/proxmox/0.75.0/docs/data-sources/virtual_environment_vms
-data "proxmox_virtual_environment_vms" "debian12_templates" {
-  tags = ["debian", "debian12", "desktop", "docker", "gnome", "template"]
+data "proxmox_virtual_environment_vms" "debian13_templates" {
+  tags = ["debian", "debian13", "desktop", "docker", "gnome", "template"]
 }
 
 # see https://registry.terraform.io/providers/bpg/proxmox/0.75.0/docs/data-sources/virtual_environment_vm
-data "proxmox_virtual_environment_vm" "debian12_template" {
-  node_name = data.proxmox_virtual_environment_vms.debian12_templates.vms[0].node_name
-  vm_id     = data.proxmox_virtual_environment_vms.debian12_templates.vms[0].vm_id
+data "proxmox_virtual_environment_vm" "debian13_template" {
+  node_name = data.proxmox_virtual_environment_vms.debian13_templates.vms[0].node_name
+  vm_id     = data.proxmox_virtual_environment_vms.debian13_templates.vms[0].vm_id
 }
 
 # the virtual machine cloudbase-init cloud-config.
@@ -177,9 +177,9 @@ resource "proxmox_virtual_environment_file" "example_ci_user_data" {
 resource "proxmox_virtual_environment_vm" "example" {
   name      = var.prefix
   node_name = var.proxmox_node_name
-  tags      = sort(["debian12", "example", "terraform"])
+  tags      = sort(["debian13", "example", "terraform"])
   clone {
-    vm_id = data.proxmox_virtual_environment_vm.debian12_template.vm_id
+    vm_id = data.proxmox_virtual_environment_vm.debian13_template.vm_id
     full  = true
   }
   cpu {
@@ -229,7 +229,7 @@ resource "proxmox_virtual_environment_vm" "example" {
     # # Use following if need fixed IP Address, otherwise comment out
     ip_config {
       ipv4 {
-        address = "192.168.4.80/24"
+        address = "192.168.4.81/24"
         gateway = "192.168.4.1"
       }
     }

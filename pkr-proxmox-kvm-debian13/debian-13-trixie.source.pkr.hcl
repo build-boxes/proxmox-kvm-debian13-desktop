@@ -1,7 +1,7 @@
 # This Packer builder is heavily derived from the original work done at https://github.com/shackofnoreturn/packer-proxmox-debian-12-bookworm-template
 #
 #
-source "proxmox-iso" "debian-12" {
+source "proxmox-iso" "debian-13" {
   proxmox_url              = "https://${var.proxmox_host}/api2/json"
   username                 = var.proxmox_api_user
   password                 = var.proxmox_api_password
@@ -9,8 +9,8 @@ source "proxmox-iso" "debian-12" {
   node                     = var.proxmox_node
 
   vm_name                 = var.vm_name
-  template_description    = "Debian 12 Bookworm Packer Template, with Docker installed  -- Created: ${formatdate("YYYY-MM-DD hh:mm:ss ZZZ", timestamp())}"
-  tags                    = "template;debian;debian12;bookworm;desktop;gnome;docker"
+  template_description    = "Debian 13 Trixie Packer Template, with Docker installed  -- Created: ${formatdate("YYYY-MM-DD hh:mm:ss ZZZ", timestamp())}"
+  tags                    = "template;debian;debian13;bookworm;desktop;gnome;docker"
   vm_id                   = var.vmid
   os                      = "l26"
   cpu_type                = var.cpu_type

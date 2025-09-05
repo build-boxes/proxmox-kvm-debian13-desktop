@@ -5,7 +5,7 @@ variable "iso_file" {
 
 variable "iso_url" {
   type    = string
-  default = "https://cdimage.debian.org/debian-cd/12.11.0/amd64/iso-cd/debian-12.11.0-amd64-netinst.iso"
+  default = "https://cdimage.debian.org/debian-cd/13.0.0/amd64/iso-cd/debian-13.0.0-amd64-netinst.iso"
 }
 
 variable "iso_storage_pool" {
@@ -15,12 +15,12 @@ variable "iso_storage_pool" {
 
 variable "iso_checksum" {
   type    = string
-  default = "sha512:0921d8b297c63ac458d8a06f87cd4c353f751eb5fe30fd0d839ca09c0833d1d9934b02ee14bbd0c0ec4f8917dde793957801ae1af3c8122cdf28dde8f3c3e0da"
+  default = "sha512:069d47e9013cb1d651d30540fe8ef6765e5d60c8a14c8854dfb82e50bbb171255d2e02517024a392e46255dcdd18774f5cbd7e9f3a47aa1b489189475de62675"
 }
 
 variable "vm_name" {
   type = string
-  default = "pckr-tmpl-debian-12"
+  default = "pckr-tmpl-debian-13"
 }
 
 variable "vmid" {

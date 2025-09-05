@@ -1,5 +1,5 @@
-# Packer Debian 12 (Bookworm) Template for Proxmox
-Packer configuration for creating Debian 12 virtual machine templates for Proxmox VE.
+# Packer Debian 13 (Trixie) Template for Proxmox
+Packer configuration for creating Debian 13 virtual machine templates for Proxmox VE.
 
 ## Original Work Acknowledgement
 This Packer builder is heavily derived from the original work done at [https://github.com/shackofnoreturn/packer-proxmox-debian-12-bookworm-template](https://github.com/shackofnoreturn/packer-proxmox-debian-12-bookworm-template)
@@ -34,8 +34,8 @@ Navigate to the project directory and execute the following command:
 
 ```sh
 packer init .
-#packer build -var-file vars/debian_12.pkrvars.hcl -var "proxmox_api_password=PASSWORD_HERE" .
-packer build -var-file vars/debian12-hammad.pkrvars.hcl -var "proxmox_api_password=PASSWORD_HERE" .
+#packer build -var-file vars/debian_13.pkrvars.hcl -var "proxmox_api_password=PASSWORD_HERE" .
+packer build -var-file vars/debian13-hammad.pkrvars.hcl -var "proxmox_api_password=PASSWORD_HERE" .
 ```
 
 ### 3. Deploy a VM from a Template

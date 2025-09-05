@@ -1,5 +1,5 @@
 build {
-  sources = ["source.proxmox-iso.debian-12"]
+  sources = ["source.proxmox-iso.debian-13"]
 
   # Using ansible playbooks to configure debian
   provisioner "ansible" {
