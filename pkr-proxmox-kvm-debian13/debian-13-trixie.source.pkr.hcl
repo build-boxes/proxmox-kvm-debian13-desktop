@@ -10,7 +10,7 @@ source "proxmox-iso" "debian-13" {
 
   vm_name                 = var.vm_name
   template_description    = "Debian 13 Trixie Packer Template, with Docker installed  -- Created: ${formatdate("YYYY-MM-DD hh:mm:ss ZZZ", timestamp())}"
-  tags                    = "template;debian;debian13;bookworm;desktop;gnome;docker"
+  tags                    = "template;debian;debian13;trixie;desktop;gnome;docker"
   vm_id                   = var.vmid
   os                      = "l26"
   cpu_type                = var.cpu_type
