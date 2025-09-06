@@ -308,7 +308,7 @@ resource "time_sleep" "wait_2_minutes" {
 
 
 resource "null_resource" "restart_vm" {
-  depends_on = [null_resource.ssh_into_vm]
+  depends_on = [time_sleep.wait_2_minutes]
   provisioner "remote-exec" {
     connection {
       target_platform = "unix"
