@@ -77,7 +77,7 @@ variable "prefix" {
   # This is used to rename the host to this name.description
   # also used as a prefix for text and log files names.
   type    = string
-  default = "falcon01"
+  default = "falcon02"
 }
 
 variable "pub_key_file" {
@@ -298,6 +298,12 @@ resource "null_resource" "ssh_into_vm" {
       EOF
     ]
   }
+}
+
+resource "time_sleep" "wait_2_minutes" {
+  depends_on = [null_resource.ssh_into_vm]
+  # 12 minutes sleep. I have a slow Proxmox Host :(
+  create_duration = "2m"
 }
 
 
