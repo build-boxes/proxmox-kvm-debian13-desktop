@@ -300,15 +300,31 @@ resource "null_resource" "ssh_into_vm" {
   }
 }
 
-resource "time_sleep" "wait_2_minutes" {
+resource "null_resource" "wait_4_apt" {
   depends_on = [null_resource.ssh_into_vm]
-  # 12 minutes sleep. I have a slow Proxmox Host :(
-  create_duration = "2m"
+  provisioner "remote-exec" {
+    connection {
+      target_platform = "unix"
+      type            = "ssh"
+      host            = coalesce(try(split("/",proxmox_virtual_environment_vm.example.initialization[0].ip_config[0].ipv4[0].address)[0], null),proxmox_virtual_environment_vm.example.ipv4_addresses[1][0] )
+      user            = var.superuser_username
+      password        = var.superuser_password
+      private_key     = file("${var.pvt_key_file}")
+      agent           = false
+      timeout         = "5m"
+    }
+    inline = [
+      # Wait until no apt/dpkg lock is present
+      "for i in {1..300}; do sudo fuser /var/lib/dpkg/lock >/dev/null 2>&1 || break; sleep 2; done",
+      "for i in {1..300}; do sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1 || break; sleep 2; done",
+      "for i in {1..300}; do sudo fuser /var/cache/apt/archives/lock >/dev/null 2>&1 || break; sleep 2; done"
+    ]
+  }
 }
 
 
 resource "null_resource" "restart_vm" {
-  depends_on = [time_sleep.wait_2_minutes]
+  depends_on = [null_resource.wait_4_apt]
   provisioner "remote-exec" {
     connection {
       target_platform = "unix"
