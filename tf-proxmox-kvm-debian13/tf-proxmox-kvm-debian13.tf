@@ -134,6 +134,7 @@ data "cloudinit_config" "example" {
       #!/bin/bash
       
       # Identify all disks without partitions and initialize them for LVM
+      echo "Starting non-boot disk initialization for LVM..."
       n=2
       for disk in $(lsblk -dn -o NAME,TYPE | awk '$2=="disk"{print $1}'); do
         if ! lsblk /dev/$disk | grep -q part; then
@@ -149,15 +150,16 @@ data "cloudinit_config" "example" {
           partprobe /dev/$disk
       
           # Prepare the partition for LVM (create PV)
-          pvcreate /dev/$disk1
+          pvcreate /dev/$${disk}1
       
           # Optional: add to VG (example: vgname)
-          vgcreate my_vg_edisk$n /dev/$disk1
+          vgcreate my_vg_edisk$n /dev/$${disk}1
           ((n++))
       
-          echo "Initialized /dev/$disk1 for LVM"
+          echo "Initialized /dev/$${disk}1 for LVM"
         fi
       done
+      echo "... Non-boot disk initialization for LVM completed."
       EOF
   }
 }
@@ -300,8 +302,14 @@ resource "null_resource" "ssh_into_vm" {
   }
 }
 
-resource "null_resource" "wait_4_apt" {
+resource "time_sleep" "wait_4_minutes" {
   depends_on = [null_resource.ssh_into_vm]
+  # 12 minutes sleep. I have a slow Proxmox Host :(
+  create_duration = "4m"
+}
+
+resource "null_resource" "wait_4_apt" {
+  depends_on = [time_sleep.wait_4_minutes]
   provisioner "remote-exec" {
     connection {
       target_platform = "unix"
