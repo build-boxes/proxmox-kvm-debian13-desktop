@@ -56,5 +56,4 @@
 **/*.box
 
 # Hammad custom
-**/debian12-hammad.pkrvars.*
-**/debian13-hammad.pkrvars.*
+**/debian*-hammad.pkrvars.*
