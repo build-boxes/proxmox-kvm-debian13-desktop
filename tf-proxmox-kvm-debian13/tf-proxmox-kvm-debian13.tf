@@ -82,12 +82,12 @@ variable "prefix" {
 
 variable "pub_key_file" {
   type = string
-  default = "~/.ssh/id_rsa.pub"
+  #default = "~/.ssh/id_rsa.pub"
 }
 
 variable "pvt_key_file" {
   type = string
-  default = "~/.ssh/id_rsa"
+  #default = "~/.ssh/id_rsa"
   sensitive = true
 }
 
@@ -108,7 +108,8 @@ variable "superuser_password" {
 
 # see https://registry.terraform.io/providers/bpg/proxmox/0.75.0/docs/data-sources/virtual_environment_vms
 data "proxmox_virtual_environment_vms" "debian13_templates" {
-  tags = ["debian", "debian13", "desktop", "docker", "gnome", "template"]
+  tags = ["debian", "debian13", "desktop", "docker", "gnome", "template","trixie"]
+  node_name="jupyter"
 }
 
 # see https://registry.terraform.io/providers/bpg/proxmox/0.75.0/docs/data-sources/virtual_environment_vm
@@ -187,10 +188,10 @@ resource "proxmox_virtual_environment_vm" "example" {
   cpu {
     type  = "host"
     #type  = "x86-64-v2-AES"
-    cores = 2
+    cores = 1 
   }
   memory {
-    dedicated = 3 * 1024
+    dedicated = 1 * 1024
   }
   network_device {
     bridge = "vmbr0"
@@ -206,14 +207,14 @@ resource "proxmox_virtual_environment_vm" "example" {
   ## Add additional Disks here, if required.
   ##
   ##
-  disk {      # Boot Disk, Size can be increased here. Then manually Increase Volume size inside Windows-2025.
-    interface   = "scsi1"
-    file_format = "raw"
-    iothread    = true
-    ssd         = true
-    discard     = "on"
-    size        = 16     # minimum size of the Template image disk.
-  }
+  # disk {      # Boot Disk, Size can be increased here. Then manually Increase Volume size inside Windows-2025.
+  #   interface   = "scsi1"
+  #   file_format = "raw"
+  #   iothread    = true
+  #   ssd         = true
+  #   discard     = "on"
+  #   size        = 16     # minimum size of the Template image disk.
+  # }
 
   agent {
     enabled = true
@@ -231,12 +232,12 @@ resource "proxmox_virtual_environment_vm" "example" {
     # # Use following if need fixed IP Address, otherwise comment out
     ip_config {
       ipv4 {
-        address = "192.168.4.81/24"
-        gateway = "192.168.4.1"
+        address = "192.168.0.27/24"
+        gateway = "192.168.0.1"
       }
     }
     dns {
-      servers = ["192.168.4.1"]
+      servers = ["192.168.0.1"]
     }
     # # >>> Fixed IP -- End
   }
@@ -284,7 +285,7 @@ resource "null_resource" "ssh_into_vm" {
       # Enable Intellihide
       gsettings set org.gnome.shell.extensions.dash-to-dock intellihide true
       # Optional: Set fixed icon size
-      gsettings set org.gnome.shell.extensions.dash-to-dock dash-max-icon-size 32
+      gsettings set org.gnome.shell.extensions.dash-to-dock dash-max-icon-size 48
       # Optional: Make background fully opaque
       gsettings set org.gnome.shell.extensions.dash-to-dock transparency-mode 'FIXED'
       gsettings set org.gnome.shell.extensions.dash-to-dock background-opacity 0.4
