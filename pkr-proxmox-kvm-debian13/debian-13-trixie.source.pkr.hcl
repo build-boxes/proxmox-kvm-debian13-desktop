@@ -20,7 +20,7 @@ source "proxmox-iso" "debian-13" {
   machine                 = "q35"
   bios                    = "ovmf"
   efi_config {
-      efi_storage_pool  = "local-lvm"
+      efi_storage_pool  = var.storage_pool
       pre_enrolled_keys = false
       efi_format        = "raw"
       efi_type          = "4m"
