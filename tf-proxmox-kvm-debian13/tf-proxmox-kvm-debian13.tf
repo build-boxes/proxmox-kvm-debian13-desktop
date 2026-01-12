@@ -168,7 +168,7 @@ data "cloudinit_config" "example" {
 # see https://registry.terraform.io/providers/bpg/proxmox/0.75.0/docs/resources/virtual_environment_file
 resource "proxmox_virtual_environment_file" "example_ci_user_data" {
   content_type = "snippets"
-  datastore_id = "local"
+  datastore_id = var.proxmox_datastore_id
   node_name    = var.proxmox_node_name
   source_raw {
     file_name = "${var.prefix}-ci-user-data.txt"
@@ -197,6 +197,7 @@ resource "proxmox_virtual_environment_vm" "example" {
     bridge = "vmbr0"
   }
   disk {      # Boot Disk, Size can be increased here. Then manually Increase Volume size inside Windows-2025.
+    datastore_id = var.proxmox_datastore_id
     interface   = "scsi0"
     file_format = "raw"
     iothread    = true
