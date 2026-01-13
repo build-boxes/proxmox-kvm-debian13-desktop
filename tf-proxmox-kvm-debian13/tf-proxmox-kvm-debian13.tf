@@ -112,6 +112,12 @@ variable "proxmox_vm_template_tags" {
   default     = ["debian", "debian13", "desktop", "docker", "gnome", "template", "trixie"]
 }
 
+variable "proxmox_datastore_id" {
+  type        = string
+  description = "Proxmox Datastore ID where VM disks are stored"
+  default     = "local-lvm"
+}
+
 locals {
   # Store the computed host IP address for reuse throughout the configuration
   host_ip = coalesce(try(split("/",proxmox_virtual_environment_vm.example.initialization[0].ip_config[0].ipv4[0].address)[0], null),proxmox_virtual_environment_vm.example.ipv4_addresses[1][0] )
