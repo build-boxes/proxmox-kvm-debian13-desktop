@@ -15,6 +15,6 @@ PROXMOX_VE_INSECURE=true
 # Following specifies which datastore this VM and its artifacts will be on.
 proxmox_datastore_id="local"
 # Tags to identify Proxmox VM Template
-proxmox_vm_template_tags=["debian", "debian13", "desktop", "docker", "gnome", "template", "trixie"]
+proxmox_vm_template_tags=["template", "debian13", "desktop", "gnome", "docker"]
 # Tags to give to created VM
 proxmox_vm_tags=["debian13", "desktop", "example", "terraform"]

@@ -8,7 +8,7 @@ memory            = "2048"
 storage_pool      = "local-lvm"
 disk_size         = "16G"
 disk_format       = "raw"
-vm_image_tags     = ["template", "debian", "debian13", "trixie", "desktop", "gnome", "docker"]
+vm_image_tags     = ["template", "debian13", "desktop", "gnome", "docker"]
 
 iso_file         = "local:iso/debian-13.0.0-amd64-netinst.iso"
 iso_checksum     = "sha512:069d47e9013cb1d651d30540fe8ef6765e5d60c8a14c8854dfb82e50bbb171255d2e02517024a392e46255dcdd18774f5cbd7e9f3a47aa1b489189475de62675"
