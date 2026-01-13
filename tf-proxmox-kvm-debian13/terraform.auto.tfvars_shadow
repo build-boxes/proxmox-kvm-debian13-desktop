@@ -5,6 +5,7 @@ pvt_key_file="/home/XXXX/.ssh/id_rsa"
 superuser_username="terraform"
 # Password with @ symbol has issues in cloudbase-init scripts escape-sequencing in terraform ".tf" files
 superuser_password="XXXXXXXX"
+prefix="myvm"
 # Proxmox vars
 proxmox_node_address="192.168.4.20"
 proxmox_node_name="pve"
