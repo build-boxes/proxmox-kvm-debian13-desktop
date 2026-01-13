@@ -106,9 +106,20 @@ variable "superuser_password" {
   default = "HeyH0Password"
 }
 
+variable "proxmox_vm_template_tags" {
+  type        = list(string)
+  description = "Tags to filter Proxmox VM templates"
+  default     = ["debian", "debian13", "desktop", "docker", "gnome", "template", "trixie"]
+}
+
+locals {
+  # Store the computed host IP address for reuse throughout the configuration
+  host_ip = coalesce(try(split("/",proxmox_virtual_environment_vm.example.initialization[0].ip_config[0].ipv4[0].address)[0], null),proxmox_virtual_environment_vm.example.ipv4_addresses[1][0] )
+}
+
 # see https://registry.terraform.io/providers/bpg/proxmox/0.75.0/docs/data-sources/virtual_environment_vms
 data "proxmox_virtual_environment_vms" "debian13_templates" {
-  tags = ["debian", "debian13", "desktop", "docker", "gnome", "template","trixie"]
+  tags = var.proxmox_vm_template_tags
   node_name="jupyter"
 }
 
@@ -258,7 +269,7 @@ resource "null_resource" "ssh_into_vm" {
     connection {
       target_platform = "unix"
       type            = "ssh"
-      host            = coalesce(try(split("/",proxmox_virtual_environment_vm.example.initialization[0].ip_config[0].ipv4[0].address)[0], null),proxmox_virtual_environment_vm.example.ipv4_addresses[1][0] )
+      host            = local.host_ip
       user            = var.superuser_username
       password        = var.superuser_password
       private_key = file("${var.pvt_key_file}")
@@ -316,7 +327,7 @@ resource "null_resource" "wait_4_apt" {
     connection {
       target_platform = "unix"
       type            = "ssh"
-      host            = coalesce(try(split("/",proxmox_virtual_environment_vm.example.initialization[0].ip_config[0].ipv4[0].address)[0], null),proxmox_virtual_environment_vm.example.ipv4_addresses[1][0] )
+      host            = local.host_ip
       user            = var.superuser_username
       password        = var.superuser_password
       private_key     = file("${var.pvt_key_file}")
@@ -332,14 +343,23 @@ resource "null_resource" "wait_4_apt" {
   }
 }
 
+resource "null_resource" "call_custom_script" {
+  depends_on = [null_resource.wait_4_apt]
+  provisioner "local-exec" {
+    command = <<EOT
+      scp -o StrictHostKeyChecking=no -i ${var.ssh_private_key} install_ahc.sh ${var.superuser_username}@${local.host_ip}:/tmp/install_ahc.sh
+      ssh -o StrictHostKeyChecking=no -i ${var.ssh_private_key} ${var.superuser_username}@${local.host_ip} "chmod +x /tmp/install_ahc.sh && sudo /tmp/install_ahc.sh"
+    EOT
+  }
+}
 
 resource "null_resource" "restart_vm" {
-  depends_on = [null_resource.wait_4_apt]
+  depends_on = [null_resource.call_custom_script]
   provisioner "remote-exec" {
     connection {
       target_platform = "unix"
       type            = "ssh"
-      host            = coalesce(try(split("/",proxmox_virtual_environment_vm.example.initialization[0].ip_config[0].ipv4[0].address)[0], null),proxmox_virtual_environment_vm.example.ipv4_addresses[1][0] )
+      host            = local.host_ip
       user            = var.superuser_username
       password        = var.superuser_password
       private_key = file("${var.pvt_key_file}")
@@ -356,6 +376,6 @@ resource "null_resource" "restart_vm" {
 }
 
 output "ip" {
-  value = coalesce(try(split("/",proxmox_virtual_environment_vm.example.initialization[0].ip_config[0].ipv4[0].address)[0], null),proxmox_virtual_environment_vm.example.ipv4_addresses[1][0] )
+  value = local.host_ip
   #proxmox_virtual_environment_vm.example.ipv4_addresses[index(proxmox_virtual_environment_vm.example.network_interface_names, "Ethernet")][0]
 }

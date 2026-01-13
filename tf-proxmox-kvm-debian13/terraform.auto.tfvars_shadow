@@ -14,3 +14,4 @@ PROXMOX_VE_PASSWORD="XXXXXXXX"
 PROXMOX_VE_INSECURE=true
 # Following specifies which datastore this VM and its artifacts will be on.
 proxmox_datastore_id="local"
+proxmox_vm_template_tags=["debian", "debian13", "desktop", "docker", "gnome", "template", "trixie"]
