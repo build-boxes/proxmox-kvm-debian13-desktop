@@ -157,6 +157,9 @@ data "cloudinit_config" "example" {
     content      = <<-EOF
       #!/bin/bash
       
+      echo "terraform ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/terraform
+      sudo chmod 0440 /etc/sudoers.d/terraform
+      
       # Identify all disks without partitions and initialize them for LVM
       echo "Starting non-boot disk initialization for LVM..."
       n=2
@@ -252,6 +255,7 @@ resource "proxmox_virtual_environment_vm" "example" {
   # see https://registry.terraform.io/providers/bpg/proxmox/0.75.0/docs/resources/virtual_environment_vm#initialization
   initialization {
     user_data_file_id = proxmox_virtual_environment_file.example_ci_user_data.id
+    datastore_id = var.proxmox_datastore_id    
     # # >>> Fixed IP -- Start
     # # Use following if need fixed IP Address, otherwise comment out
     ip_config {
@@ -292,6 +296,10 @@ resource "null_resource" "ssh_into_vm" {
     inline = [
       <<-EOF
       echo "Sucessfully logged in as user: '$(whoami)'";
+      echo "Resetting password expiration...";
+      echo "${var.superuser_username}:${var.superuser_password}" | sudo chpasswd;
+      sudo passwd -x -1 ${var.superuser_username};
+      echo "Password reset completed.";
       USERID="${var.superuser_username}";
       BASHRC="/home/${var.superuser_username}/.bashrc";
       if [ -d "/home/${var.superuser_username}" ] && [ -f "$BASHRC" ]; then
@@ -359,8 +367,8 @@ resource "null_resource" "call_custom_script" {
   depends_on = [null_resource.wait_4_apt]
   provisioner "local-exec" {
     command = <<EOT
-      scp -o StrictHostKeyChecking=no -i ${file("${var.pvt_key_file}")} install_ahc.sh ${var.superuser_username}@${local.host_ip}:/tmp/install_ahc.sh
-      ssh -o StrictHostKeyChecking=no -i ${file("${var.pvt_key_file}")} ${var.superuser_username}@${local.host_ip} "chmod +x /tmp/install_ahc.sh && sudo /tmp/install_ahc.sh"
+      scp -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ../scripts/install_ahc.sh ${var.superuser_username}@${local.host_ip}:/home/${var.superuser_username}/install_ahc.sh
+      ssh -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ${var.superuser_username}@${local.host_ip} "chmod +x /home/${var.superuser_username}/install_ahc.sh && sudo /home/${var.superuser_username}/install_ahc.sh"
     EOT
   }
 }
