@@ -112,6 +112,12 @@ variable "proxmox_vm_template_tags" {
   default     = ["debian", "debian13", "desktop", "docker", "gnome", "template", "trixie"]
 }
 
+variable "proxmox_vm_tags" {
+  type        = list(string)
+  description = "Tags to assign to created Proxmox VMs"
+  default     = ["debian13", "desktop", "example", "terraform"]
+}
+
 variable "proxmox_datastore_id" {
   type        = string
   description = "Proxmox Datastore ID where VM disks are stored"
@@ -197,7 +203,7 @@ resource "proxmox_virtual_environment_file" "example_ci_user_data" {
 resource "proxmox_virtual_environment_vm" "example" {
   name      = var.prefix
   node_name = var.proxmox_node_name
-  tags      = sort(["debian13", "example", "terraform"])
+  tags      = var.proxmox_vm_tags
   clone {
     vm_id = data.proxmox_virtual_environment_vm.debian13_template.vm_id
     full  = true
@@ -353,8 +359,8 @@ resource "null_resource" "call_custom_script" {
   depends_on = [null_resource.wait_4_apt]
   provisioner "local-exec" {
     command = <<EOT
-      scp -o StrictHostKeyChecking=no -i ${var.ssh_private_key} install_ahc.sh ${var.superuser_username}@${local.host_ip}:/tmp/install_ahc.sh
-      ssh -o StrictHostKeyChecking=no -i ${var.ssh_private_key} ${var.superuser_username}@${local.host_ip} "chmod +x /tmp/install_ahc.sh && sudo /tmp/install_ahc.sh"
+      scp -o StrictHostKeyChecking=no -i ${file("${var.pvt_key_file}")} install_ahc.sh ${var.superuser_username}@${local.host_ip}:/tmp/install_ahc.sh
+      ssh -o StrictHostKeyChecking=no -i ${file("${var.pvt_key_file}")} ${var.superuser_username}@${local.host_ip} "chmod +x /tmp/install_ahc.sh && sudo /tmp/install_ahc.sh"
     EOT
   }
 }

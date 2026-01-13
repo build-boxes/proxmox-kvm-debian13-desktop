@@ -96,3 +96,9 @@ variable "preseed_url" {
   type    = string
   default = "http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg"
 }
+
+variable "vm_image_tags" {
+  type        = list(string)
+  description = "Tags for the Packer template"
+  default     = ["template", "debian", "debian13", "trixie", "desktop", "gnome", "docker"]
+}
