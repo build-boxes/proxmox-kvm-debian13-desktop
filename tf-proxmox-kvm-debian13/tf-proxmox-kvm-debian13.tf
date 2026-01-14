@@ -316,8 +316,11 @@ resource "null_resource" "ssh_into_vm" {
       echo "Sucessfully logged in as user: '$(whoami)'";
       echo "Resetting password expiration...";
       echo "${var.superuser_username}:${var.superuser_password}" | sudo chpasswd;
-      sudo passwd -x -1 ${var.superuser_username};
-      echo "Password reset completed.";
+      sudo chage -I -1 -m 0 -M -1 -E -1 ${var.superuser_username};
+      echo "Configuring passwordless sudo for ${var.superuser_username}...";
+      echo "${var.superuser_username} ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/${var.superuser_username};
+      sudo chmod 0440 /etc/sudoers.d/${var.superuser_username};
+      echo "Password reset and sudo configuration completed";
       USERID="${var.superuser_username}";
       BASHRC="/home/${var.superuser_username}/.bashrc";
       if [ -d "/home/${var.superuser_username}" ] && [ -f "$BASHRC" ]; then
@@ -386,7 +389,7 @@ resource "null_resource" "call_custom_script" {
   provisioner "local-exec" {
     command = <<EOT
       scp -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ../scripts/install_ahc.sh ${var.superuser_username}@${local.host_ip}:/home/${var.superuser_username}/install_ahc.sh
-      ssh -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ${var.superuser_username}@${local.host_ip} "chmod +x /home/${var.superuser_username}/install_ahc.sh && sudo /home/${var.superuser_username}/install_ahc.sh"
+      ssh -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ${var.superuser_username}@${local.host_ip} "chmod +x /home/${var.superuser_username}/install_ahc.sh && /home/${var.superuser_username}/install_ahc.sh"
     EOT
   }
 }
