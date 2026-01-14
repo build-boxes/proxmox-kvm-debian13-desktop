@@ -40,4 +40,4 @@
 - name: Set password to never expire
   user:
     name: terraform
-    password_expire_days: -1
+    expires: -1
