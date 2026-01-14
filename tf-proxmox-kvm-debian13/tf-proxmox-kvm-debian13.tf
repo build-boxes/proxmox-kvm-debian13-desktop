@@ -124,6 +124,24 @@ variable "proxmox_datastore_id" {
   default     = "local-lvm"
 }
 
+variable "vm_fixed_ip" {
+  type        = string
+  description = "Fixed IP address with CIDR notation for the created VM"
+  default     = "192.168.0.3/24"
+}
+
+variable "vm_fixed_gateway" {
+  type        = string
+  description = "Fixed Gateway IP address for the created VM"
+  default     = "192.168.0.1"
+}
+
+variable "vm_fixed_dns" {
+  type        = list(string)
+  description = "Fixed DNS server IP addresses for the created VM"
+  default     = ["192.168.0.1"]
+}
+
 locals {
   # Store the computed host IP address for reuse throughout the configuration
   host_ip = coalesce(try(split("/",proxmox_virtual_environment_vm.example.initialization[0].ip_config[0].ipv4[0].address)[0], null),proxmox_virtual_environment_vm.example.ipv4_addresses[1][0] )
@@ -260,12 +278,12 @@ resource "proxmox_virtual_environment_vm" "example" {
     # # Use following if need fixed IP Address, otherwise comment out
     ip_config {
       ipv4 {
-        address = "192.168.0.27/24"
-        gateway = "192.168.0.1"
+        address = var.vm_fixed_ip
+        gateway = var.vm_fixed_gateway
       }
     }
     dns {
-      servers = ["192.168.0.1"]
+      servers = var.vm_fixed_dns
     }
     # # >>> Fixed IP -- End
   }
