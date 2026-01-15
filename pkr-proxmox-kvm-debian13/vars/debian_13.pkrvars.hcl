@@ -17,3 +17,10 @@ iso_storage_pool = "local:iso"
 # it is hard coded in preseed cfg
 debian_root_password = "packer"
 preseed_url = "http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg"
+
+# superuser details for (cloud-cfg file)
+superuser_name     = "terraform"
+superuser_gecos    = "Terraform Admin"
+# md5 encoded password for "Hey0Password"
+superuser_password = "$y$j9T$meabcdefghijkl"
+superuser_ssh_pub_key = "ssh-rsa AAAAB3NzaC1ycXXXXXzRs= terraform@ServerName"

@@ -2,9 +2,13 @@
 # 
 pub_key_file="/home/XXXX/.ssh/id_rsa.pub"
 pvt_key_file="/home/XXXX/.ssh/id_rsa"
+# Superuser name must match that was set in packer cloud.cfg or packer variables
 superuser_username="terraform"
 # Password with @ symbol has issues in cloudbase-init scripts escape-sequencing in terraform ".tf" files
-superuser_password="XXXXXXXX"
+superuser_old_password="XXXXXXXX"
+superuser_new_password="XXXXXXXX"
+root_new_password="XXXXXXXX"
+# prefix is actually Proxmox KVM Name, and hostname.
 prefix="myvm"
 # Proxmox vars
 proxmox_node_address="192.168.4.20"

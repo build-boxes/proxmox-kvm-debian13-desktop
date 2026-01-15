@@ -37,7 +37,27 @@
     group: root
     mode: '0644'
 
-- name: Set password to never expire
+- name: Set root password to never expire
+  user:
+    name: root
+    expires: -1
+
+- name: Set SuperUser password to never expire
   user:
     name: terraform
     expires: -1
+
+- name: Set /bin/bash as default shell for new users
+  lineinfile:
+    path: /etc/default/useradd
+    regexp: '^SHELL='
+    line: 'SHELL=/bin/bash'
+    create: true
+
+- name: Set /bin/bash for existing users
+  user:
+    name: "{{ item }}"
+    shell: /bin/bash
+  loop:
+    - terraform
+    - root

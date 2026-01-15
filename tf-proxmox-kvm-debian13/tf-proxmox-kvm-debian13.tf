@@ -96,13 +96,29 @@ variable "superuser_username" {
   default = "terraform"
 }
 
-variable "superuser_password" {
+variable "superuser_old_password" {
   type      = string
   sensitive = true
   # NB the password will be reset by the cloudbase-init SetUserPasswordPlugin plugin.
   # NB this value must meet the Windows password policy requirements.
   #    see https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/password-must-meet-complexity-requirements
   # Password with @ symbol has issues in cloudbase-init scripts escape-sequencing in terraform ".tf" files
+  default = "HeyH0Password"
+}
+
+variable "superuser_new_password" {
+  type      = string
+  sensitive = true
+  # NB the password will be reset by the cloudbase-init SetUserPasswordPlugin plugin.
+  # NB this value must meet the Windows password policy requirements.
+  #    see https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/password-must-meet-complexity-requirements
+  # Password with @ symbol has issues in cloudbase-init scripts escape-sequencing in terraform ".tf" files
+  default = "HeyH0Password"
+}
+
+variable "root_new_password" {
+  type      = string
+  sensitive = true
   default = "HeyH0Password"
 }
 
@@ -305,7 +321,7 @@ resource "null_resource" "ssh_into_vm" {
       type            = "ssh"
       host            = local.host_ip
       user            = var.superuser_username
-      password        = var.superuser_password
+      password        = var.superuser_old_password
       private_key = file("${var.pvt_key_file}")
       agent = false
       timeout = "2m"
@@ -315,8 +331,11 @@ resource "null_resource" "ssh_into_vm" {
       <<-EOF
       echo "Sucessfully logged in as user: '$(whoami)'";
       echo "Resetting password expiration...";
-      echo "${var.superuser_username}:${var.superuser_password}" | sudo chpasswd;
+      echo "${var.superuser_username}:${var.superuser_new_password}" | sudo chpasswd;
       sudo chage -I -1 -m 0 -M -1 -E -1 ${var.superuser_username};
+      echo "Resetting 'root' password expiration...";
+      echo "root:${var.root_new_password}" | sudo chpasswd;
+      sudo chage -I -1 -m 0 -M -1 -E -1 root;
       echo "Configuring passwordless sudo for ${var.superuser_username}...";
       echo "${var.superuser_username} ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/${var.superuser_username};
       sudo chmod 0440 /etc/sudoers.d/${var.superuser_username};
@@ -351,6 +370,9 @@ resource "null_resource" "ssh_into_vm" {
       flatpak --user remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
       flatpak --user remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
       echo "Fixed Flathub inclusion in gnome-software App store for User"
+      # Set Hostname to prefix
+      echo "Setting hostname to ${var.prefix}"
+      sudo hostnamectl set-hostname ${var.prefix}
       EOF
     ]
   }
@@ -370,7 +392,7 @@ resource "null_resource" "wait_4_apt" {
       type            = "ssh"
       host            = local.host_ip
       user            = var.superuser_username
-      password        = var.superuser_password
+      password        = var.superuser_new_password
       private_key     = file("${var.pvt_key_file}")
       agent           = false
       timeout         = "5m"
@@ -402,7 +424,7 @@ resource "null_resource" "restart_vm" {
       type            = "ssh"
       host            = local.host_ip
       user            = var.superuser_username
-      password        = var.superuser_password
+      password        = var.superuser_new_password
       private_key = file("${var.pvt_key_file}")
       agent = false
       timeout = "2m"
