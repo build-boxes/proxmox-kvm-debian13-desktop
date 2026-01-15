@@ -102,3 +102,28 @@ variable "vm_image_tags" {
   description = "Tags for the Packer template"
   default     = ["template", "debian", "debian13", "trixie", "desktop", "gnome", "docker"]
 }
+
+variable "superuser_name" {
+  type        = string
+  description = "Superuser name for cloud-init configuration"
+  default     = ""
+}
+
+variable "superuser_gecos" {
+  type        = string
+  description = "Superuser GECOS/full name for cloud-init configuration"
+  default     = ""
+}
+
+variable "superuser_password" {
+  type        = string
+  description = "Superuser password hash for cloud-init configuration"
+  sensitive   = true
+  default     = ""
+}
+
+variable "superuser_ssh_pub_key" {
+  type        = string
+  description = "Superuser SSH public key for cloud-init configuration"
+  default     = ""
+}
