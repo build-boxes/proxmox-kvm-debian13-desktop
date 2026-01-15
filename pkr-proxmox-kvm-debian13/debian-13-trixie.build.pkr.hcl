@@ -18,26 +18,22 @@ build {
 
   # Replace superuser_name placeholder in cloud.cfg
   provisioner "shell" {
-    inline = ["sed -i \"s/<<superuser_name>>/$SUPERUSER_NAME/g\" /etc/cloud/cloud.cfg"]
-    environment_vars = ["SUPERUSER_NAME=${var.superuser_name}"]
+    inline = ["awk -v old='<<superuser_name>>' -v new='${var.superuser_name}' '{gsub(old, new); print}' /etc/cloud/cloud.cfg > /tmp/cloud.cfg && mv /tmp/cloud.cfg /etc/cloud/cloud.cfg"]
   }
 
   # Replace superuser_gecos placeholder in cloud.cfg
   provisioner "shell" {
-    inline = ["sed -i \"s/<<superuser_gecos>>/$SUPERUSER_GECOS/g\" /etc/cloud/cloud.cfg"]
-    environment_vars = ["SUPERUSER_GECOS=${var.superuser_gecos}"]
+    inline = ["awk -v old='<<superuser_gecos>>' -v new='${var.superuser_gecos}' '{gsub(old, new); print}' /etc/cloud/cloud.cfg > /tmp/cloud.cfg && mv /tmp/cloud.cfg /etc/cloud/cloud.cfg"]
   }
 
   # Replace superuser_password placeholder in cloud.cfg
   provisioner "shell" {
-    inline = ["sed -i \"s/<<superuser_password>>/$SUPERUSER_PASSWORD/g\" /etc/cloud/cloud.cfg"]
-    environment_vars = ["SUPERUSER_PASSWORD=${var.superuser_password}"]
-  }  
+    inline = ["awk -v old='<<superuser_password>>' -v new='${var.superuser_password}' '{gsub(old, new); print}' /etc/cloud/cloud.cfg > /tmp/cloud.cfg && mv /tmp/cloud.cfg /etc/cloud/cloud.cfg"]
+  }
 
   # Replace superuser_ssh_pub_key placeholder in cloud.cfg
   provisioner "shell" {
-    inline = ["sed -i \"s/<<superuser_ssh_pub_key>>/$SUPERUSER_SSH_PUB_KEY/g\" /etc/cloud/cloud.cfg"]
-    environment_vars = ["SUPERUSER_SSH_PUB_KEY=${var.superuser_ssh_pub_key}"]
+    inline = ["awk -v old='<<superuser_ssh_pub_key>>' -v new='${var.superuser_ssh_pub_key}' '{gsub(old, new); print}' /etc/cloud/cloud.cfg > /tmp/cloud.cfg && mv /tmp/cloud.cfg /etc/cloud/cloud.cfg"]
   }
 
   # Copy Proxmox cloud-init config
