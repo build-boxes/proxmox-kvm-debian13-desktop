@@ -7,7 +7,7 @@ build {
     use_proxy        = false
     user             = "root"
     ansible_env_vars = ["ANSIBLE_HOST_KEY_CHECKING=False"]
-    extra_arguments  = ["--extra-vars", "ansible_password=${var.debian_root_password}"]
+    extra_arguments  = ["--extra-vars", "ansible_password=${var.debian_root_password} superuser_name=${var.superuser_name}"]
   }
 
   # Copy default cloud-init config

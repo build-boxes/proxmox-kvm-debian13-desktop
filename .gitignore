@@ -58,3 +58,10 @@
 # Hammad custom
 **/debian*-hammad.pkrvars.*
 scripts/**/*.sh
+scripts/**/*.ps1
+scripts/**/*.psm1
+scripts/**/*.bat
+scripts/**/*.cmd
+scripts/**/*.yml
+scripts/**/*.yaml
+scripts/**/*.py

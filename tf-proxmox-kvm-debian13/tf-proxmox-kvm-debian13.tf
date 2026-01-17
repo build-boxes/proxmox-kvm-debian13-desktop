@@ -158,6 +158,36 @@ variable "vm_fixed_dns" {
   default     = ["192.168.0.1"]
 }
 
+variable "cpu_core_count" {
+  type        = number
+  description = "Number of CPU cores for the created VM"
+  default     = 1
+  validation {
+    condition     = var.cpu_core_count >= 1 && var.cpu_core_count <= 8
+    error_message = "CPU core count must be at least 1, and at most 8."
+  }
+}
+
+variable "memory_size_gb" {
+  type        = number
+  description = "Memory size in GB for the created VM"
+  default     = 1
+  validation {
+    condition     = var.memory_size_gb >= 1 && var.memory_size_gb <= 15
+    error_message = "Memory size must be at least 1 GB, and at most 15 GB."
+  }
+}
+
+variable "disk_size_gb_boot" {
+  type        = string
+  description = "Boot disk size in GB for the created VM. Default is '16G'."
+  default     = "16G"
+  validation {
+    condition     = tonumber(regexreplace(var.disk_size_gb_boot, "[^0-9]", "")) >= 16 && tonumber(regexreplace(var.disk_size_gb_boot, "[^0-9]", "")) <= 200
+    error_message = "Boot disk size must be at least '16GB', and at most '200GB'. Also note that is a String value inside Double-Quotes with 'G' at its end."
+  }
+}
+
 locals {
   # Store the computed host IP address for reuse throughout the configuration
   host_ip = coalesce(try(split("/",proxmox_virtual_environment_vm.example.initialization[0].ip_config[0].ipv4[0].address)[0], null),proxmox_virtual_environment_vm.example.ipv4_addresses[1][0] )
@@ -191,8 +221,8 @@ data "cloudinit_config" "example" {
     content      = <<-EOF
       #!/bin/bash
       
-      echo "terraform ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/terraform
-      sudo chmod 0440 /etc/sudoers.d/terraform
+      echo "${var.superuser_username} ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/${var.superuser_username}
+      sudo chmod 0440 /etc/sudoers.d/${var.superuser_username}
       
       # Identify all disks without partitions and initialize them for LVM
       echo "Starting non-boot disk initialization for LVM..."
@@ -248,10 +278,10 @@ resource "proxmox_virtual_environment_vm" "example" {
   cpu {
     type  = "host"
     #type  = "x86-64-v2-AES"
-    cores = 1 
+    cores = var.cpu_core_count 
   }
   memory {
-    dedicated = 1 * 1024
+    dedicated = 1024 * var.memory_size_gb
   }
   network_device {
     bridge = "vmbr0"
@@ -263,12 +293,13 @@ resource "proxmox_virtual_environment_vm" "example" {
     iothread    = true
     ssd         = true
     discard     = "on"
-    size        = 20     # minimum size of the Template image disk.
+    size        = var.disk_size_gb_boot
   }
   ## Add additional Disks here, if required.
   ##
   ##
   # disk {      # Boot Disk, Size can be increased here. Then manually Increase Volume size inside Windows-2025.
+  #   datastore_id = var.proxmox_datastore_id
   #   interface   = "scsi1"
   #   file_format = "raw"
   #   iothread    = true
@@ -378,14 +409,14 @@ resource "null_resource" "ssh_into_vm" {
   }
 }
 
-resource "time_sleep" "wait_4_minutes" {
+resource "time_sleep" "wait_3_minutes" {
   depends_on = [null_resource.ssh_into_vm]
   # 12 minutes sleep. I have a slow Proxmox Host :(
-  create_duration = "4m"
+  create_duration = "3m"
 }
 
 resource "null_resource" "wait_4_apt" {
-  depends_on = [time_sleep.wait_4_minutes]
+  depends_on = [time_sleep.wait_3_minutes]
   provisioner "remote-exec" {
     connection {
       target_platform = "unix"
@@ -406,18 +437,8 @@ resource "null_resource" "wait_4_apt" {
   }
 }
 
-resource "null_resource" "call_custom_script" {
-  depends_on = [null_resource.wait_4_apt]
-  provisioner "local-exec" {
-    command = <<EOT
-      scp -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ../scripts/install_ahc.sh ${var.superuser_username}@${local.host_ip}:/home/${var.superuser_username}/install_ahc.sh
-      ssh -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ${var.superuser_username}@${local.host_ip} "chmod +x /home/${var.superuser_username}/install_ahc.sh && /home/${var.superuser_username}/install_ahc.sh"
-    EOT
-  }
-}
-
 resource "null_resource" "restart_vm" {
-  depends_on = [null_resource.call_custom_script]
+  depends_on = [null_resource.wait_4_apt]
   provisioner "remote-exec" {
     connection {
       target_platform = "unix"
@@ -437,6 +458,64 @@ resource "null_resource" "restart_vm" {
     ]
   }
 }
+
+
+resource "time_sleep" "wait_3_minutes_2" {
+  depends_on = [null_resource.restart_vm]
+  create_duration = "3m"
+}
+
+/* 
+## Example of copying and running a docker-compose file on the created VM.
+## Assumes docker and docker-compose are already installed on the VM.
+## Also assumes the docker-compose.yml file is located in ../scripts/docker-compose.yml
+##
+resource "null_resource" "copy_compose_file" {
+  depends_on = [time_sleep.wait_3_minutes_2]
+  provisioner "local-exec" {
+    command = "scp -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ../scripts/docker-compose.yml ${var.superuser_username}@${local.host_ip}:/home/${var.superuser_username}/"
+  }
+}
+
+resource "null_resource" "run_docker_compose" {
+  depends_on = [null_resource.copy_compose_file]
+  provisioner "local-exec" {
+    command = <<EOT
+      ssh -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ${var.superuser_username}@${local.host_ip} "cd /home/${var.superuser_username} && sudo docker compose up -d"
+    EOT
+  }
+}
+*/
+
+/*
+## Example of copying and running a custom script on the created VM.
+## Assumes the custom script is located in ../scripts/install_ahc.sh
+##
+resource "null_resource" "call_custom_script" {
+  depends_on = [time_sleep.wait_3_minutes_2]
+  provisioner "local-exec" {
+    command = <<EOT
+      scp -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ../scripts/install_ahc.sh ${var.superuser_username}@${local.host_ip}:/home/${var.superuser_username}/install_ahc.sh
+      ssh -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ${var.superuser_username}@${local.host_ip} "chmod +x /home/${var.superuser_username}/install_ahc.sh && /home/${var.superuser_username}/install_ahc.sh"
+    EOT
+  }
+}
+*/
+
+/*
+## Example of running an Ansible playbook against the created VM.
+## Assumes Ansible is installed on the local machine running Terraform.
+## Also assumes the Ansible playbook is located in ../scripts/ansible_main.yml
+##
+resource "null_resource" "run_ansible_playbook" {
+  depends_on = [time_sleep.wait_3_minutes_2]
+  provisioner "local-exec" {
+    #interpreter = ["/bin/bash"]
+    working_dir = "../scripts"
+    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u '${var.superuser_username}' -i '${local.host_ip},' --private-key ${var.pvt_key_file} -e 'pub_key=${var.pub_key_file}' ansible_main.yml"
+  }
+}
+*/
 
 output "ip" {
   value = local.host_ip

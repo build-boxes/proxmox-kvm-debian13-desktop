@@ -31,12 +31,11 @@
   become_flags: "su -c"
   ansible.builtin.shell:
     cmd: |
-      USERID="terraform"
+      USERID="{{ superuser_name }}"
       BASHRC="/home/$USERID/.bashrc"
       if [ -d "/home/$USERID" ] && [ -f "$BASHRC" ]; then
         grep -q "/usr/sbin" "$BASHRC" || echo 'export PATH="/usr/sbin:$PATH"' >> "$BASHRC"
       fi
-
 
 - name: Install gnome extensions, gparted, etc.
   become: true
@@ -50,3 +49,12 @@
       gnome-shell-extensions-extra gnome-tweaks \
       mpd lua5.4 jq imagemagick gnome-software-plugin-flatpak;
       /usr/bin/apt install -y gparted gnome-disk-utility;
+    
+# Following should always be the last statement in last Ansible task, Make sure dpkg locks are not ongoing.
+- name: Wait until no process is locking dpkg, and all updates are complete, before terminating this build....
+  ansible.builtin.shell: |
+    ! sudo fuser /var/lib/dpkg/lock > /dev/null 2>&1
+  register: lock_check
+  retries: 90
+  delay: 2
+  until: lock_check.rc == 0

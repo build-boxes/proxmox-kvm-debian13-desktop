@@ -26,3 +26,6 @@ proxmox_vm_tags=["debian13", "desktop", "example", "terraform"]
 vm_fixed_ip="192.168.0.3/24"
 vm_fixed_gateway="192.168.0.1"
 vm_fixed_dns=["192.168.0.1"]
+cpu_core_count=2
+memory_size_gb=1
+disk_size_gb_boot="20G"

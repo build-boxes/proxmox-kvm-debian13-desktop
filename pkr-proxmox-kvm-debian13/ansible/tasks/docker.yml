@@ -4,6 +4,8 @@
     path: /etc/apt/keyrings
     state: directory
     mode: '0755'
+    owner: root
+    group: root    
   become: true
 
 - name: Download Docker GPG key
@@ -11,15 +13,31 @@
     url: https://download.docker.com/linux/debian/gpg
     dest: /etc/apt/keyrings/docker-archive-keyring.gpg
     mode: '0644'
+
+- name: Ensure /etc/apt/keyrings/docker.asc is world-readable
+  ansible.builtin.file:
+    path: /etc/apt/keyrings/docker.asc
+    mode: '0644'
+    owner: root
+    group: root
   become: true
 
-- name: Add Docker Repository
-  ansible.builtin.apt_repository:
-    #repo: deb https://download.docker.com/linux/debian trixie stable
-    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian trixie stable"
+- name: Add Docker repository using deb822_repository
+  ansible.builtin.deb822_repository:
+    name: docker
+    types: [deb]
+    uris: https://download.docker.com/linux/debian
+    suites: [trixie]
+    components: [stable]
+    architectures: [amd64]
+    signed_by: /etc/apt/keyrings/docker.asc
+    enabled: true
     state: present
-    filename: docker
-  become: true  
+
+- name: Update apt package cache - before getting docker packages
+  ansible.builtin.apt:
+    update_cache: yes
+  become: true
 
 - name: Install Docker Engine, Docker CLI, Containerd, & Docker Compose
   ansible.builtin.apt:
