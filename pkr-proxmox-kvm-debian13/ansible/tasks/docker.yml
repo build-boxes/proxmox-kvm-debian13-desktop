@@ -11,7 +11,7 @@
 - name: Download Docker GPG key
   ansible.builtin.get_url:
     url: https://download.docker.com/linux/debian/gpg
-    dest: /etc/apt/keyrings/docker-archive-keyring.gpg
+    dest: /etc/apt/keyrings/docker.asc
     mode: '0644'
 
 - name: Ensure /etc/apt/keyrings/docker.asc is world-readable
