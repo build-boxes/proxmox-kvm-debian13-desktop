@@ -10,9 +10,10 @@ disk_size         = "16G"
 disk_format       = "raw"
 vm_image_tags     = ["template", "debian13", "desktop", "gnome", "docker"]
 
-iso_file         = "local:iso/debian-13.0.0-amd64-netinst.iso"
-iso_checksum     = "sha512:069d47e9013cb1d651d30540fe8ef6765e5d60c8a14c8854dfb82e50bbb171255d2e02517024a392e46255dcdd18774f5cbd7e9f3a47aa1b489189475de62675"
+iso_file         = "vmdata:iso/debian-13.3.0-amd64-netinst.iso"
+iso_checksum     = "sha512:1ada40e4c938528dd8e6b9c88c19b978a0f8e2a6757b9cf634987012d37ec98503ebf3e05acbae9be4c0ec00b52e8852106de1bda93a2399d125facea45400f8"
 iso_storage_pool = "local:iso"
+iso_url          = "https://cdimage.debian.org/debian-cd/13.3.0/amd64/iso-cd/debian-13.3.0-amd64-netinst.iso"
 
 # it is hard coded in preseed cfg
 debian_root_password = "packer"
@@ -24,3 +25,4 @@ superuser_gecos    = "Terraform Admin"
 # md5 encoded password for "Hey0Password"
 superuser_password = "$y$j9T$meabcdefghijkl"
 superuser_ssh_pub_key = "ssh-rsa AAAAB3NzaC1ycXXXXXzRs= terraform@ServerName"
+common_name         = "debian.ca"

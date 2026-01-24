@@ -183,8 +183,18 @@ variable "disk_size_gb_boot" {
   description = "Boot disk size in GB for the created VM. Default is '16G'."
   default     = "16G"
   validation {
-    condition     = tonumber(regexreplace(var.disk_size_gb_boot, "[^0-9]", "")) >= 16 && tonumber(regexreplace(var.disk_size_gb_boot, "[^0-9]", "")) <= 200
+    condition     = tonumber(replace(var.disk_size_gb_boot, "G", "")) >= 16 && tonumber(replace(var.disk_size_gb_boot, "G", "")) <= 200
     error_message = "Boot disk size must be at least '16GB', and at most '200GB'. Also note that is a String value inside Double-Quotes with 'G' at its end."
+  }
+}
+
+variable "disk_boot_ssd_enabled" {
+  type        = bool
+  description = "Enable SSD flag for the boot disk of the created VM"
+  default     = true
+  validation {
+    condition     = var.disk_boot_ssd_enabled == true || var.disk_boot_ssd_enabled == false
+    error_message = "disk_boot_ssd_enabled must be a boolean value (true or false)."
   }
 }
 
@@ -291,9 +301,9 @@ resource "proxmox_virtual_environment_vm" "example" {
     interface   = "scsi0"
     file_format = "raw"
     iothread    = true
-    ssd         = true
+    ssd         = var.disk_boot_ssd_enabled
     discard     = "on"
-    size        = var.disk_size_gb_boot
+    size        = tonumber(replace(var.disk_size_gb_boot, "G", ""))
   }
   ## Add additional Disks here, if required.
   ##
@@ -404,6 +414,38 @@ resource "null_resource" "ssh_into_vm" {
       # Set Hostname to prefix
       echo "Setting hostname to ${var.prefix}"
       sudo hostnamectl set-hostname ${var.prefix}
+      sudo sed -i 's/127.0.1.1\s\+debian/127.0.1.1\t${var.prefix}/' /etc/hosts
+      ## For debian13-cli - Fix dns, Disable ipv6
+      ##
+      echo "Setting DNS servers to ${join(" ", var.vm_fixed_dns)}"
+      sudo bash -c 'cat > /etc/resolv.conf << EOL
+      nameserver ${join("\nnameserver ", var.vm_fixed_dns)}
+      EOL'
+      echo "Disabling IPv6..."
+      sudo bash -c 'cat >> /etc/sysctl.d/99-disable-ipv6.conf << EOL
+      net.ipv6.conf.all.disable_ipv6 = 1
+      net.ipv6.conf.default.disable_ipv6 = 1
+      net.ipv6.conf.lo.disable_ipv6 = 1
+      EOL'
+      sudo sysctl -p /etc/sysctl.d/99-disable-ipv6.conf
+      ##
+      ## End dns and ipv6 fix
+      ##
+      ## Extend Root filesystem to fill boot disk
+      ##
+      echo "Extending root filesystem to fill boot disk..."
+      sudo growpart /dev/sda 3
+      sudo pvresize /dev/sda3
+      sudo lvextend -l +100%FREE /dev/debian-vg/root
+      sudo resize2fs /dev/debian-vg/root
+      echo "Extended root filesystem to fill boot disk."
+      ## End Extend Root filesystem to fill boot disk
+      ## Enable Docker Service to start at boot
+      ##
+      echo "Enabling Docker service to start at boot..."
+      sudo systemctl enable docker
+      echo "Enabled Docker service to start at boot."
+      ## End Enable Docker Service to start at boot 
       EOF
     ]
   }

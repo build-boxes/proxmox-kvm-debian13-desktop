@@ -20,7 +20,7 @@
       -sha256 -days 3650 -nodes
       -out /etc/xrdp/cert.pem
       -keyout /etc/xrdp/key.pem
-      -subj "/C=CA/ST=Ontario/L=Toronto/O=Debian/CN=hexword.ca";
+      -subj "/C=CA/ST=Ontario/L=Toronto/O=Debian/CN={{ common_name }}";
       /usr/bin/chown root:xrdp /etc/xrdp/key.pem;
       /usr/bin/chmod 440 /etc/xrdp/key.pem;
       /usr/bin/systemctl enable xrdp;

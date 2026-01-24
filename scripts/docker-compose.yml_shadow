@@ -1,8 +1,9 @@
 # Docker Compose file for Dockhand with PostgreSQL
-version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
+    ports:
+      - 5432:5432    
     environment:
       POSTGRES_USER: dockhand
       POSTGRES_PASSWORD: changeme
