@@ -67,3 +67,4 @@ scripts/**/*.cmd
 scripts/**/*.yml
 scripts/**/*.yaml
 scripts/**/*.py
+!scripts/**/configure_muezzin*.sh
