@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+##################################################
+# Helper Functions
+##################################################
+to_bool() {
+    case "$1" in
+        true|True|TRUE|1)   echo "true" ;;
+        false|False|FALSE|0|"") echo "false" ;;
+        *) echo "false" ;;  # default fallback
+    esac
+}
+
 ###############################################
 # Terraform → Bash Parameter Mapping
 ###############################################
@@ -11,10 +22,10 @@ MADHAB="$4"
 LAT="$5"
 LON="$6"
 TZ="$7"
-STARTUP="$8"
-FAJR_CUSTOM="$9"
+STARTUP=$(to_bool "$8")
+FAJR_CUSTOM=$(to_bool "$9")
 FAJR_URL="${10}"
-DUA="${11}"
+DUA=$(to_bool "${11}")
 
 echo "------------------------------------------------------------"
 echo " Starting Muezzin + Autologin Configuration Script - Part 2"
@@ -72,44 +83,106 @@ while [ ! -f "$CONFIG_FILE" ]; do
 done
 
 echo "✓ Config file detected after ${WAITED}s"
+echo "Stopping service muezzin to allow configuration update..."
+systemctl --user stop muezzin.service
+echo "✓ Service stopped."
+echo "Replacing muezzin minimal config with initial full config..."
+mv /home/"$SUPERUSER_NAME"/config.json "$CONFIG_FILE"
+echo "✓ Config template copied."
 echo "Continuing with next steps..."
 
 ###############################################################
 # 7. Update Muezzin Config JSON
 ###############################################################
-echo "[7/7] Updating Muezzin config JSON using jq…"
+echo "[7/7] Updating Muezzin config JSON using jq and terraform parameters…"
 
-FAJR_PATH='"$DOC_PATH"'
-echo "Using Fajr Adhan path: $FAJR_PATH"
+FAJR_PATH=${DOC_PATH}
 
+# Boolean normalization (Terraform → jq)
+to_bool() {
+    case "$1" in
+        true|True|TRUE|1) echo "true" ;;
+        false|False|FALSE|0|"") echo "false" ;;
+        *) echo "false" ;;
+    esac
+}
+
+STARTUP_BOOL=$(to_bool "$STARTUP")
+FAJR_CUSTOM_BOOL=$(to_bool "$FAJR_CUSTOM")
+DUA_BOOL=$(to_bool "$DUA")
+
+# Build jq filter dynamically (using jq variables)
 FILTER="."
 
 append() {
-    local key="$1"
-    local value="$2"
+    local jq_path="$1"   # e.g. .latitude
+    local varname="$2"   # e.g. LAT
+    local value="${!varname}"
+
     if [ -n "$value" ]; then
-        FILTER="$FILTER | $key"
+        FILTER="$FILTER | $jq_path = \$$varname"
     fi
 }
 
-append ".calculationMethod.calcMethod = \"$CALC\"" "$CALC"
-append ".calculationMethod.madhab = \"$MADHAB\"" "$MADHAB"
-append ".latitude = \"$LAT\"" "$LAT"
-append ".longitude = \"$LON\"" "$LON"
-append ".timezone = \"$TZ\"" "$TZ"
+# String fields
+append ".calculationMethod.calcMethod" "CALC"
+append ".calculationMethod.madhab" "MADHAB"
+append ".latitude" "LAT"
+append ".longitude" "LON"
+append ".timezone" "TZ"
+append ".adhan.adhanFajr.path" "FAJR_PATH"
 
-# Boolean values
-[ -n "$STARTUP" ]      && FILTER="$FILTER | .settings.startupSound = $STARTUP"
-[ -n "$FAJR_CUSTOM" ]  && FILTER="$FILTER | .adhan.adhanFajr.custom = $FAJR_CUSTOM"
-[ -n "$FAJR_PATH" ]    && FILTER="$FILTER | .adhan.adhanFajr.path = $FAJR_PATH"
-[ -n "$DUA" ]          && FILTER="$FILTER | .adhan.dua.enabled = $DUA"
+# Boolean fields
+append ".settings.startupSound" "STARTUP_BOOL"
+append ".adhan.adhanFajr.custom" "FAJR_CUSTOM_BOOL"
+append ".adhan.dua.enabled" "DUA_BOOL"
 
-echo "Applying jq filter: $FILTER"
+echo "Applying jq filter:"
+echo "$FILTER"
 
-jq "$FILTER" "$CONFIG_FILE" > "${CONFIG_FILE}.tmp"
-mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
+# Build jq argument list dynamically
+JQ_ARGS=()
+
+add_arg() {
+    local name="$1"
+    local value="$2"
+    if [ -n "$value" ]; then
+        JQ_ARGS+=( --arg "$name" "$value" )
+    fi
+}
+
+add_argjson() {
+    local name="$1"
+    local value="$2"
+    if [ -n "$value" ]; then
+        JQ_ARGS+=( --argjson "$name" "$value" )
+    fi
+}
+
+# String args
+add_arg "CALC" "$CALC"
+add_arg "MADHAB" "$MADHAB"
+add_arg "LAT" "$LAT"
+add_arg "LON" "$LON"
+add_arg "TZ" "$TZ"
+add_arg "FAJR_PATH" "$FAJR_PATH"
+
+# Boolean args
+add_argjson "STARTUP_BOOL" "$STARTUP_BOOL"
+add_argjson "FAJR_CUSTOM_BOOL" "$FAJR_CUSTOM_BOOL"
+add_argjson "DUA_BOOL" "$DUA_BOOL"
+
+# Apply jq update
+jq "${JQ_ARGS[@]}" "$FILTER" "$CONFIG_FILE" > "${CONFIG_FILE}.tmp" \
+  && mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
 
 echo "✓ Config updated successfully."
+
+# Restart Muezzin Flatpak (not systemd)
+echo "Restarting Muezzin Flatpak…"
+#flatpak kill io.github.dbchoco.muezzin 2>/dev/null
+systemctl --user restart muezzin.service
+echo "✓ Restarted."
 
 echo "------------------------------------------------------------"
 echo " Muezzin setup completed successfully."

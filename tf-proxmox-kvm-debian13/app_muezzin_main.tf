@@ -52,6 +52,7 @@ resource "null_resource" "configure_muezzin_p2" {
   provisioner "local-exec" {
     command = <<EOT
         scp -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ../scripts/configure_muezzin_p2.sh ${var.superuser_username}@${local.host_ip}:/home/${var.superuser_username}/configure_muezzin_p2.sh
+        scp -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ../scripts/muezzin_config_initial.json ${var.superuser_username}@${local.host_ip}:/home/${var.superuser_username}/config.json
         ssh -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ${var.superuser_username}@${local.host_ip} "chmod +x /home/${var.superuser_username}/configure_muezzin_p2.sh"
         ssh -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ${var.superuser_username}@${local.host_ip} "bash /home/${var.superuser_username}/configure_muezzin_p2.sh \
             ${var.superuser_username} \

@@ -1,0 +1,105 @@
+{
+        "language": "en",
+        "first": false,
+        "calculationMethod": {
+                "calcMethod": "ISNA",
+                "madhab": "Hanafi",
+                "hlr": "TA",
+                "pcr": "CC",
+                "shafaq": "shafaqG"
+        },
+        "latitude": "43.89760",
+        "longitude": "-78.86360",
+        "timezone": "America/Toronto",
+        "timeDisplay": {
+                "clockFormat": 12,
+                "showSeconds": true
+        },
+        "locationName": "",
+        "darkMode": false,
+        "settings": {
+                "startupSound": true,
+                "notifCheck": true,
+                "systray": true,
+                "adhanCheck": true,
+                "autoStart": true,
+                "minStart": false
+        },
+        "sunnahTimes": {
+                "motn": false,
+                "totn": false
+        },
+        "weather": {
+                "enabled": true,
+                "units": "C"
+        },
+        "adhan": {
+                "adhan": {
+                        "custom": false,
+                        "path": "../../ressources/audio/Adhan - Ahmed Al-Nufais.mp3"
+                },
+                "adhanFajr": {
+                        "custom": true,
+                        "path": "/run/user/1000/doc/f45a4f71/Fajr_azan.mp3"
+                },
+                "dua": {
+                        "enabled": false
+                }
+        },
+        "bgImage": [
+                true,
+                "../../ressources/images/bgImage.jpg"
+        ],
+        "adj": [
+                false,
+                0,
+                0,
+                0,
+                0,
+                0
+        ],
+        "hijriAdj": 0,
+        "customSettings": [
+                false,
+                0,
+                0,
+                0
+        ],
+        "delay": [
+                false,
+                0
+        ],
+        "customTimes": {
+                "enabled": false,
+                "fajr": "00:00",
+                "dhuhr": "00:00",
+                "asr": "00:00",
+                "maghrib": "00:00",
+                "isha": "00:00"
+        },
+        "jumuahTime": {
+                "enabled": false,
+                "time": "00:00"
+        },
+        "quran": {
+                "font": "text_uthmani",
+                "fontsize": "42",
+                "recitation": {
+                        "reciter": "7",
+                        "volume": 50
+                },
+                "translation": {
+                        "show": true,
+                        "lang": {
+                                "enabled": false,
+                                "lang": "en"
+                        },
+                        "trans": "131",
+                        "fontsize": "14"
+                },
+                "transliteration": {
+                        "show": true,
+                        "fontsize": "14"
+                }
+        }
+}

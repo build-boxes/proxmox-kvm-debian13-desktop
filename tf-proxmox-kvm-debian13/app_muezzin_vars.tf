@@ -26,10 +26,12 @@ variable "timezone" {
 variable "startup_sound" {
   description = "Whether to play a startup sound."
   type        = string
+  default     = "true"
 }   
 variable "fajr_custom" {
   description = "Whether to use a custom Fajr adhan."
   type        = string
+  default     = "false"
 }   
 variable "fajr_url" {
   description = "The URL for the custom Fajr adhan."
@@ -38,4 +40,5 @@ variable "fajr_url" {
 variable "dua_enabled" {
   description = "Whether Dua is enabled."
   type        = string
+  default     = "false" 
 }
