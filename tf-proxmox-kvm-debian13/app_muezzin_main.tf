@@ -42,13 +42,13 @@ resource "null_resource" "restart_vm2" {
   }
 }
 
-resource "time_sleep" "wait_3.5_minutes" {
+resource "time_sleep" "wait_3p5_minutes" {
   depends_on = [null_resource.restart_vm2]
   create_duration = "210s"
 }
 
 resource "null_resource" "configure_muezzin_p2" {
-  depends_on = [time_sleep.wait_3.5_minutes]
+  depends_on = [time_sleep.wait_3p5_minutes]
   provisioner "local-exec" {
     command = <<EOT
         scp -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ../scripts/configure_muezzin_p2.sh ${var.superuser_username}@${local.host_ip}:/home/${var.superuser_username}/configure_muezzin_p2.sh
