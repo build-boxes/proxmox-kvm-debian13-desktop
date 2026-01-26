@@ -29,3 +29,15 @@ vm_fixed_dns=["192.168.0.1"]
 cpu_core_count=2
 memory_size_gb=1
 disk_size_gb_boot="20G"
+#
+# Vars for Muezzin script
+#
+calc_method="ISNA"
+madhab="Hanafi"
+latitude="43.87513962930307"
+longitude="-78.90826552570974"
+timezone="America/Toronto"
+startup_sound="true"
+fajr_custom="true"
+fajr_url="https://media.assabile.com/assabile/adhan_3435370/31f4182515ea.mp3"
+dua_enabled="false"
