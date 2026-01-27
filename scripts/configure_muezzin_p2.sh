@@ -107,9 +107,9 @@ to_bool() {
     esac
 }
 
-STARTUP_BOOL=$(to_bool "$STARTUP")
-FAJR_CUSTOM_BOOL=$(to_bool "$FAJR_CUSTOM")
-DUA_BOOL=$(to_bool "$DUA")
+STARTUP_BOOL=$STARTUP
+FAJR_CUSTOM_BOOL=$FAJR_CUSTOM
+DUA_BOOL=$DUA
 
 # Build jq filter dynamically (using jq variables)
 FILTER="."
@@ -189,3 +189,23 @@ echo " Muezzin setup completed successfully."
 echo "------------------------------------------------------------"
 echo "Please remember to Add Host PCI Device Pass through to the VM for Audio if needed."
 echo "------------------------------------------------------------"
+###################################################
+# Manual Steps in Proxmox Host for PCI Pass Through
+####################################################
+# Get PCI Audio Device ID for Pass Through and Address
+# First log into SSH Session on Proxmox Host.
+# Then...
+# lspci -nn | grep -i audio
+# Example Output: 00:1f.3 Audio device [0403]: Intel Corporation Device [8086:a0c8] (rev 30)
+# Use the following command to extract the values:
+# read a b <<< $(lspci -nn | grep -i audio | awk '{gsub(/\[|\]/,""); print $1, $12 }')
+# PCI_ADDR="$a"
+# PCI_ID="$b"
+# Make sure PCI_ID is included in /etc/modprobe.d/* file for vfio-pci
+# echo "options vfio-pci ids=$PCI_ID" >> /etc/modprobe.d/vfio.conf
+# Then add to VM Hardware - Add the PCI device to your VM In /etc/pve/qemu-server/<VMID>.conf
+# echo "hostpci0: $PCI_ADDR" >> /etc/pve/qemu-server/<VMID>.conf
+# Then reboot the VM to apply changes.
+# qm reboot <VMID>
+# qm status <VMID>
+###################################################
