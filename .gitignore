@@ -68,3 +68,5 @@ scripts/**/*.yml
 scripts/**/*.yaml
 scripts/**/*.py
 !scripts/**/configure_muezzin*.sh
+!scripts/**/volume_*.sh
+!scripts/**/configure_proxmox_vm_pci_*_passthrough.sh

@@ -53,6 +53,8 @@ resource "null_resource" "configure_muezzin_p2" {
     command = <<EOT
         scp -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ../scripts/configure_muezzin_p2.sh ${var.superuser_username}@${local.host_ip}:/home/${var.superuser_username}/configure_muezzin_p2.sh
         scp -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ../scripts/muezzin_config_initial.json ${var.superuser_username}@${local.host_ip}:/home/${var.superuser_username}/config.json
+        scp -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ../scripts/volume_*.sh ${var.superuser_username}@${local.host_ip}:/home/${var.superuser_username}/
+        ssh -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ${var.superuser_username}@${local.host_ip} "chmod +x /home/${var.superuser_username}/volume_*.sh"
         ssh -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ${var.superuser_username}@${local.host_ip} "chmod +x /home/${var.superuser_username}/configure_muezzin_p2.sh"
         ssh -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ${var.superuser_username}@${local.host_ip} "bash /home/${var.superuser_username}/configure_muezzin_p2.sh \
             ${var.superuser_username} \
@@ -66,6 +68,25 @@ resource "null_resource" "configure_muezzin_p2" {
             ${var.fajr_custom} \
             ${var.fajr_url} \
             ${var.dua_enabled}"
+        ssh -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ${var.superuser_username}@${local.host_ip} "bash /home/${var.superuser_username}/volume_boost.sh"
+        ssh -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ${var.superuser_username}@${local.host_ip} "bash /home/${var.superuser_username}/volume_boost.sh"
+        ssh -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ${var.superuser_username}@${local.host_ip} "bash /home/${var.superuser_username}/volume_boost.sh"
     EOT
   }
 }
+
+locals {
+  proxmox_username = split("@", "${var.PROXMOX_VE_USERNAME}")[0]
+}
+
+resource "null_resource" "configure_proxmox_host_pci_audio_passthrough" {
+  depends_on = [null_resource.configure_muezzin_p2]
+  provisioner "local-exec" {
+    command = <<EOT
+        scp -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ../scripts/configure_proxmox_vm_pci_audio_passthrough.sh ${local.proxmox_username}@${var.proxmox_node_address}:~/configure_proxmox_vm_pci_audio_passthrough.sh
+        ssh -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ${local.proxmox_username}@${var.proxmox_node_address} "chmod +x ~/configure_proxmox_vm_pci_audio_passthrough.sh"
+        ssh -o StrictHostKeyChecking=no -i ${var.pvt_key_file} ${local.proxmox_username}@${var.proxmox_node_address} "bash ~/configure_proxmox_vm_pci_audio_passthrough.sh \
+          ${proxmox_virtual_environment_vm.example.vm_id} 0"
+    EOT
+  }
+} 

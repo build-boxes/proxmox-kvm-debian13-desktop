@@ -26,6 +26,9 @@
     - unattended-upgrades
     - wget
     - unattended-upgrades
+    # CLI Audio Tools for GNOME Desktop
+    - pipewire-audio-client-libraries
+    - pulseaudio-utils
 
 - name: Set APT periodic update settings
   copy:
