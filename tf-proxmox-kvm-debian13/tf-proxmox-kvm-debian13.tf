@@ -389,6 +389,9 @@ resource "null_resource" "ssh_into_vm" {
       fi;
       gnome-extensions enable dash-to-dock@micxgx.gmail.com
       echo "Enabled dash-to-dock extension for user."
+      ## Additional Step here for Linux Mint (Ubuntu) with GNOME desktop
+      ## sudo cp ~/.local/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com/schemas/org.gnome.shell.extensions.dash-to-dock.gschema.xml /usr/share/glib-2.0/schemas/ && sudo glib-compile-schemas /usr/share/glib-2.0/schemas/
+      ## exit
       # Set dock position to LEFT
       gsettings set org.gnome.shell.extensions.dash-to-dock dock-position 'LEFT'
       # Make the dock extend to full height (panel-like)
